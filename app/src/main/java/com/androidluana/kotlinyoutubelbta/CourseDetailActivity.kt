@@ -7,7 +7,10 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.gson.GsonBuilder
 import kotlinx.android.synthetic.main.activity_main.*
+import okhttp3.*
+import java.io.IOException
 
 class CourseDetailActivity : AppCompatActivity() {
 
@@ -19,33 +22,68 @@ class CourseDetailActivity : AppCompatActivity() {
         recyclerView_main.layoutManager = LinearLayoutManager(this)
         recyclerView_main.adapter = CourseDetailAdapter()
 
+        val navBarTitle = intent.getStringExtra(CustomViewHolder.VIDEO_TITLE_KEY)
+        supportActionBar?.title = navBarTitle
+
+//        println(courseDetailUrl)
+
+        fetchJSON()
+
     }
 
-    private class CourseDetailAdapter : RecyclerView.Adapter<CourseLessonViewHolder>() {
+    private fun fetchJSON() {
 
-        override fun getItemCount(): Int {
-            return 5
-        }
+        val videoId = intent.getIntExtra(CustomViewHolder.VIDEO_ID_KEY, -1)
+        val courseDetailUrl = "http://api.letsbuildthatapp.com/youtube/course_detail?id=" + videoId
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseLessonViewHolder {
+        val client = OkHttpClient()
+        val request = Request.Builder().url(courseDetailUrl).build()
+        client.newCall(request).enqueue(object : Callback {
 
-            val layoutInflater = LayoutInflater.from(parent.context)
-            val customView = layoutInflater.inflate(R.layout.course_lesson_row, parent, false)
+            override fun onResponse(call: Call, response: Response) {
+                val body = response.body?.string()
+
+                val gson = GsonBuilder().create()
+
+                val courseLessons = gson.fromJson(body, Array<CourseLesson>::class.java)
+                
+//                println(body)
+
+            }
+
+            override fun onFailure(call: Call, e: IOException) {
+
+            }
+        })
+
+
+    }
+}
+
+private class CourseDetailAdapter : RecyclerView.Adapter<CourseLessonViewHolder>() {
+
+    override fun getItemCount(): Int {
+        return 5
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseLessonViewHolder {
+
+        val layoutInflater = LayoutInflater.from(parent.context)
+        val customView = layoutInflater.inflate(R.layout.course_lesson_row, parent, false)
 
 //            val blueView = View(parent.context)
 //            blueView.setBackgroundColor(Color.BLUE)
 //            blueView.minimumHeight = 50
-            return CourseLessonViewHolder(customView)
-        }
-
-        override fun onBindViewHolder(holder: CourseLessonViewHolder, position: Int) {
-
-        }
+        return CourseLessonViewHolder(customView)
     }
 
-    private class CourseLessonViewHolder(val customView: View) :
-        RecyclerView.ViewHolder(customView) {
-
+    override fun onBindViewHolder(holder: CourseLessonViewHolder, position: Int) {
 
     }
+}
+
+private class CourseLessonViewHolder(val customView: View) :
+    RecyclerView.ViewHolder(customView) {
+
+
 }
