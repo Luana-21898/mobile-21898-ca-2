@@ -39,7 +39,7 @@ class MainAdapter(val homeFeed: HomeFeed) : RecyclerView.Adapter<CustomViewHolde
         val channelProfileImageView = holder.view.imageView_channel_profile
         Picasso.with(holder.view.context).load(video.channel.profileImageUrl).into(channelProfileImageView)
 
-        holder.video = video
+        holder?.video = video
 
     }
 }
